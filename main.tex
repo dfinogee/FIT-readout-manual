@@ -2,32 +2,32 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T2A]{fontenc}
 \usepackage[utf8]{inputenc}
+\usepackage{float}
 \usepackage[russian]{babel}
 \usepackage[a4paper, left=10mm, right=10mm, top=20mm, bottom=20mm]{geometry}
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{tabularx}
+
 
 \title{Описание FIT readout unit}
 \author{Финогеев Дмитрий, ИЯИ РАН}
 
 
-\usepackage{natbib}
-\usepackage{graphicx}
+
+
 
 \begin{document}
 
 \maketitle
 
-\section{Документация модуля 'FIT readout unit'}
-Данная документация документирует работу модуля 'readout unit' детектора FIT. Документация описывает функциональность модуля и основные принципы его работы. Содержит описание функциональных элементов и регистров для управления. Топологическая схема документирования документации представлена на рис ~\ref{fig:1}
-
-\begin{figure}[htbp]
-	\centering 
-	\includegraphics[width=0.5\textwidth]{scale_2400.jpg}
-	\caption{\label{fig:1} Топологическая схема документирования документации}
-\end{figure}
-
-Данный раздел является документацией к документации для решения спорных вопросов относительно документации.
+Актуальная версия докумена доступна для скачивания по ссылке
+\newline
+https://github.com/dfinogee/FIT-readout-manual/archive/master.zip
 
 
+\tableofcontents
+\newpage
 
 \section{FIT readout unit}
 FIT readout unit (FRU) является модулем программного обеспечения ПЛИС плат PM/TCM. Основные функции FRU:
@@ -42,7 +42,7 @@ FIT readout unit (FRU) является модулем программного 
 
 
 Функциональная схема FRU представлена на рис ~\ref{fig:2}
-\begin{figure}[htbp]
+\begin{figure}[H]
 	\centering 
 	\includegraphics[width=1\textwidth]{FIT_readout.png}
 	\caption{\label{fig:2} Функциональная схема FIT readout unit}
@@ -57,7 +57,7 @@ FRU обменивается данными с PM/TCM с одной сторон
 \section{Описание алгоритма коррекции BC и отбора событий}
 На рис ~\ref{fig:3} представлена схема временной коррекции и алгоритма отбора событий. 
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 	\centering 
 	\includegraphics[width=1\textwidth]{BCIDcorr.png}
 	\caption{\label{fig:3} Схема временной коррекции BC и отбора событий по триггеру}
@@ -133,7 +133,7 @@ FRU обменивается данными с PM/TCM с одной сторон
 
 На рисунке ~\ref{fig:3} представлена схема генерации последовательности триггеров модулем 'CTP emulator'.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 	\centering 
 	\includegraphics[width=0.8\textwidth]{trigger generator.png}
 	\caption{\label{fig:4} Схема генерации последовательности триггеров модулем 'CTP emulator'}
@@ -141,7 +141,7 @@ FRU обменивается данными с PM/TCM с одной сторон
 
 
 
-Так, на пример, если регистр 'trigger bunch frequency' равен 0xDED, регистор 'trigger frequency offset' равен 0x5 то в момент старта генератора или при переходе бита 'reset bunch offset' в регистре 'reset control' из состояния 0х1 в 0х0 будет ожидаться следующий триггер 'HB'. При получении триггера 'HB' будет произведен отсчет в 0x5 событий 'event id'. После этого будет запущена генерация триггеров в соответствии с 'pattern'. Если регистр 'Trigger continuous pattern 31 to 0' равен 0x3 и 'Trigger continuous pattern 63 to 32' равен 0x1 то будет сгенерированы триггера на пятом, шестом и 38 событии в орбите. После этого будет произведен отсчет в 0хDED событий 'event id' и новый запуск генерации триггеров в соответствии с 'pattern'. Поскольку значение 0xDED на одно больше, чем длительность орбита, в следующем орбите триггера будут в событиях с номерами 6, 7 и 39.
+Так, на пример, если регистр 'trigger bunch frequency' равен 0xDED, регистр 'trigger frequency offset' равен 0x5 то в момент старта генератора или при переходе бита 'reset start offset' в регистре 'reset control' из состояния 0х1 в 0х0 будет ожидаться следующий триггер 'HB'. При получении триггера 'HB' будет произведен отсчет в 0x5 событий 'event id'. После этого будет запущена генерация триггеров в соответствии с 'pattern'. Если регистр 'Trigger continuous pattern 31 to 0' равен 0x3 и 'Trigger continuous pattern 63 to 32' равен 0x1 то будет сгенерированы триггера на пятом, шестом и 38 событии в орбите. После этого будет произведен отсчет в 0хDED событий 'event id' и новый запуск генерации триггеров в соответствии с 'pattern'. Поскольку значение 0xDED на одно больше, чем длительность орбита, в следующем орбите триггера будут в событиях с номерами 6, 7 и 39.
 
 Модуль 'PM/TCM emulator' имеет схожий алгоритм генерации что позволяет обеспечить генерацию данных синхронно с генерацией триггера для отладки работы механизма отбора событий.
 
@@ -162,12 +162,12 @@ FRU обменивается данными с PM/TCM с одной сторон
 
 
 \subsection{модуль RX data clock sync}
-На схеме ~\ref{fig:5} представлена схема регистров (логических защелок) для перехода между асинхронными клоками: внутренним клоком 'Data clk' 40 МГц и клоком от CRU 'RX frame clk' 40 МГц полученным через модуль GBT. Фаза между этими клоками измеряется по клоку 'system clk' 320 МГц и может принимать значения от 0 до 7. При нормальном режиме работы фаза не должна манятся больше чем на два отсчета, если это происходит значение бита 'RX phase error' регистра 'GBT status' принимает значение 0х1 до сброса командой 'reset RX phase error' регистра 'Reset control'
+На схеме ~\ref{fig:5} представлена схема регистров (логических защелок) для перехода между асинхронными клоками: внутренним клоком 'Data clk' 40 МГц и клоком от CRU 'RX frame clk' 40 МГц полученным через модуль GBT. Фаза между этими клоками измеряется по клоку 'system clk' 320 МГц и может принимать значения от 0 до 7. При нормальном режиме работы фаза не должна меняется больше чем на +-1 отсчета от значения при начале синхронизации, если это происходит значение бита 'RX phase error' регистра 'GBT status' принимает значение 0х1 до сброса командой 'reset RX phase error' регистра 'Reset control'
 
 
 
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 	\centering 
 	\includegraphics[width=1\textwidth]{cross_clock_domain_latch.png}
 	\caption{\label{fig:5} Схема перехода между асинхронными клоками от RXframeClk 40Мгц от CRU и внутренним клоком Data clk 40 МГц}
@@ -182,7 +182,11 @@ FRU обменивается данными с PM/TCM с одной сторон
 
 
 \subsection{модуль PM/TCM emulator}
-Данный модуль предназначен для отладки 'FIT readout unit' и генерирует данные от модуля PM/TCM, где в качестве значения данных, используется непрерывный счетчик. Для включения модуля в регистр 'Data generator' следует записать значение 'main generator'. Регистрами 'Data bunch pattern', 'data bunch frequency', 'data frequency offset' можно задавать последовательность, частоту, и смещение относительно орбита. Регистр 'trigger response mask' позволяет определить набор триггеров, при получении которых будет вырабатываться данные генератора. Бит 'reset bunch offset' в регистре 'Reset control' перезапускает генерацию данных в модулях 'PM/TCM emulator' и 'CTP emulator' для их синхронизации.
+Данный модуль предназначен для отладки 'FIT readout unit' и генерирует данные от модуля PM/TCM, где в качестве значения данных, используется непрерывный счетчик. Для включения модуля в регистр 'Data generator' следует записать значение 'main generator'. Регистрами 'Data bunch pattern', 'data bunch frequency', 'data start offset' можно задавать последовательность, частоту, и смещение относительно орбита. Алгоритм генерации данных модуля схожа с генерацией непрерывного триггера в модуле модуле 'CTP emulator'. Отличие состоит в том, что при генерации тригерра 'pattern' состоит из 64 однобитных значений определяющих наличие триггера на данном шаге. В модуле 'PM/TCM emulator' 'pattern' задается восемью значениями по 4 бита (0-15). Каждое значение определяет количество слов в пакете для текущего события. В случае если значение превышает 0х6, то следующие события не генерируются пока не закончится передача текущего слова. Так на пример если значение регистра 'Data bunch pattern' равно 0х111D21 то последовательность пакетов будет следующая: пакет с одним словом, с двумя, с 13 (на шагах 4 и 5 пакеты генерироваться не будут), с одним словом.
+
+Регистр 'trigger response mask' позволяет определить набор триггеров, при получении которых будет вырабатываться данные генератора с количество слов для первой позиции паттерна (если выполняется непрерывная генерация данных, то количество слов будет соответсвовать нулевой позиции 'pattern' а не текущему шагу). Следует отметить что номер события 'event id' пакета будет больше чем у триггера из-за задержки алгоритма. 
+
+Бит 'reset start offset' в регистре 'Reset control' перезапускает генерацию данных в модулях 'PM/TCM emulator' и 'CTP emulator' для их синхронизации.
 
 
 
@@ -208,7 +212,7 @@ FIT readout unit использует две группы клоков с   пр
 https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Headers/include/Headers/RAWDataHeader.h
 
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 	\centering 
 	\includegraphics[width=0.5\textwidth]{RDH_scheme.png}
 	\caption{\label{fig:6} Схема RDH пакета}
@@ -216,151 +220,69 @@ https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Headers/include/Hea
 
 
 
-В теле RDH пакета содержится набор пакетов данных каждый из которых относится к отдельному событию и состоит из заголовка 'event header' и блока данных. Пакеты событий всегда относятся к одному орбиту и отсортированы по порядку поступления. Формат заголовка одинаков для модулей PM/TCM, его формат представлен в таблице ~\ref{fig:7}. Формат блока данных различен для PM/TCM, TCM имеет два режима передачи: стандартный и расширенный. В PM каждое GBT слово 80 бит содержит одно или два слова 40 бит для канала: с 0 бита по 39 и с 40 по 79, в случае одного слова, старшие биты с 40 по 79 заполняются нулями. Формат слова для канала представлен в таблице ~\ref{fig:7}. Поскольку PM имеет 12 каналов, размер пакета данных события составляет от двух до 7 слов GBT. Формат данных для TCM в обычном режиме представлен в таблице ~\ref{fig:7} и имеет размер в 1 GBT слово плюс заголовок. В расширенном режиме пакет данных TCM имеет 9 слов плюс заголовок в этом режиме передача данных для двух соседних событий невозможна. Формат данных TCM представлен в таблице ~\ref{fig:7}. Актуальная версия формата данных доступна по ссылке.
+В теле RDH пакета содержится набор пакетов данных каждый из которых относится к отдельному событию и состоит из заголовка 'event header' и блока данных. Пакеты событий всегда относятся к одному орбиту и отсортированы по порядку поступления. Формат заголовка одинаков для модулей PM/TCM, его формат представлен в таблице ~\ref{fig:7}. Формат блока данных различен для PM/TCM, TCM имеет два режима передачи: стандартный и расширенный. В PM каждое GBT слово 80 бит содержит одно или два слова 40 бит для канала: с 0 бита по 39 и с 40 по 79, в случае одного слова, старшие биты с 40 по 79 заполняются нулями. Формат слова для канала представлен в таблице ~\ref{fig:8}. Поскольку PM имеет 12 каналов, размер пакета данных события составляет от двух до 7 слов GBT. Формат данных для TCM представлен в таблице ~\ref{fig:9} и имеет размер в 1 GBT слово плюс заголовок. В расширенном режиме пакет данных TCM имеет 9 слов плюс заголовок в этом режиме передача данных для двух соседних событий невозможна. Актуальная версия формата данных доступна по ссылке.
 
 https://drive.google.com/file/d/1LxKEuedLqxtyCRw072ZqJ2vj7upP0ZgV
 
 
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 	\centering 
 	\includegraphics[width=1\textwidth]{readout_format.png}
 	\caption{\label{fig:7} Формат данных детектора}
 \end{figure}
 
+\begin{figure}[H]
+	\centering 
+	\includegraphics[width=0.8\textwidth]{PM_data.png}
+	\caption{\label{fig:8} Формат данных модуля PM}
+\end{figure}
+
+\begin{figure}[H]
+	\centering 
+	\includegraphics[width=0.8\textwidth]{TCM_data.png}
+	\caption{\label{fig:9} Формат данных модуля TCM}
+\end{figure}
+
+
+
+
+\section{Используемые компоненты блоков памяти}
+
+
+\begin{table}[H]
+\begin{tabularx}{1\textwidth}{|p{1,8cm}|p{1cm}|p{1cm}|p{1cm}|p{1,5cm}|p{1,5cm}|p{1,5cm}|p{1,5cm}|X|}
+\hline
+Название & ширина записи, бит & ширина чтения, бит & размер & клок записи & клок чтения & используется в модуле & регистр занятости & назначение \\ \hline
+
+Raw fifo & 80 & 80 & 4096 & system320 & system320 & Data packager & Raw FIFO count & Принимает сформированные данные PM/TCM для дальнейшего отбора модулем'event selector' \\ \hline
+
+Selector fifo & 80 & 80 & 4096 & system320 & data40 & Data packager & Selector FIFO count & Принимает отобранные данные для формирования RDH \\ \hline
+
+Trg fifo & 76 & 76 & 512 & data40 & system320 & event selector & нет & Принимает триггеры для отбора событий \\ \hline
+
+Сntpck fifo & 160 & 160 & 128 & system320 & data40 & event selector & нет & содержит управляющие слова для формирования RDH \\ \hline
+
+data320to40 & 80 & 80 & 4096 & system320 & data40 & TX data generator & нет & принимает данные модуля из raw data fifo для отправки по GBT в режиме 'is readout bypass mode' \\ \hline
+
+\end{tabularx}
+\caption{Список используемых блоков памяти\label{tab0}}
+\end{table}
+
+
+
 
 
 \section{Регистры управления и статуса}
 
-\caption{Таблица регистров управления.\label{long}}\\
-\begin{tabular}{| l | l | l | l | l | l | l | l | l |}
-\hline
-addr & 31 .. 28 & 27 .. 24 & 23 .. 20 & 19 .. 16 & 15 .. 12 & 11 .. 8 & 7 .. 4 & 3 .. 0 \\ \hline
-D8 &  &  & Readout mode & Readout command & \multicolumn{2}{c|}{Reset control} & Trigger generator & Data generator \\ \hline
-D9 &  \multicolumn{8}{c|}{Trigger respond mask} \\\hline
-DA &  \multicolumn{8}{c|}{Data bunch pattern} \\\hline
-DB &  \multicolumn{8}{c|}{Trigger single value} \\\hline
-DC &  \multicolumn{8}{c|}{Trigger continuous pattern 63 to 32} \\\hline
-DD &  \multicolumn{8}{c|}{Trigger continuous pattern 31 to 0} \\\hline
-DE &  \multicolumn{8}{c|}{Trigger continuous value} \\ \hline
-DF &  \multicolumn{4}{c|}{Trigger bunch frequency} & \multicolumn{4}{c|}{Data bunch frequency} \\ \hline
-E0 & & \multicolumn{3}{c|}{Trigger bunch offset} &  & \multicolumn{3}{c|}{Data bunch offset} \\ \hline
-E1 &  \multicolumn{4}{c|}{FEE ID (RDH)} & \multicolumn{4}{c|}{PAR (RDH)} \\ \hline
-E2 &  \multicolumn{4}{c|}{Max RDH payload} & \multicolumn{4}{c|}{Detector field (RDH)} \\ \hline
-E3 &  \multicolumn{4}{c|}{Trigger compare delay} & \multicolumn{4}{c|}{BCID delay} \\ \hline
-E4 &  \multicolumn{8}{c|}{Data select trigger mask} \\ \hline
-\end{tabular}
+\subsection{Описание регистров управления}
 
 
-
-
-\caption{Reset control.\label{long}}\\
+\begin{table}[H]
+\centering
 \begin{tabular}{| l | l | l |}
 \hline
-No & bit & значение \\ \hline
-0 & 8 & Orbit sync \\ \hline
-1 & 9 & Drop hit counter \\ \hline
-2 & 10 & Generator bunch offset \\ \hline
-3 & 11 & GBT errors \\ \hline
-4 & 12 & Reset GBT \\ \hline
-5 & 13 & RX phase error \\ \hline
-\end{tabular}
-
-
-\caption{Data generator\label{long}}\\
-\begin{tabular}{| l | l | l |}
-\hline
-Значение регистра & режим работы \\ \hline
-0 & No generator \\ \hline
-1 & Main generator \\ \hline
-2 & TX generator \\ \hline
-\end{tabular}
-
-\caption{Trigger generator\label{long}}\\
-\begin{tabular}{| l | l | l |}
-\hline
-Значение регистра & режим работы \\ \hline
-0 & No generator \\ \hline
-1 & Continuous generator \\ \hline
-\end{tabular}
-
-\caption{Readout command\label{long}}\\
-\begin{tabular}{| l | l | l |}
-\hline
-Значение регистра & режим работы \\ \hline
-0 & None \\ \hline
-1 & SOC \\ \hline
-2 & SOT \\ \hline
-3 & EOC \\ \hline
-4 & EOT \\ \hline
-\end{tabular}
-
-\caption{Readout mode\label{long}}\\
-\begin{tabular}{| l | l | l |}
-\hline
-No & bit & значение \\ \hline
-0 & 20 & Is HB response \\ \hline
-1 & 21 & Is readout bypass mode \\ \hline
-2 & 22 & Force readout idle mode \\ \hline
-\end{tabular}
-
-
-
-
-\caption{Таблица регистров статуса.\label{long}}\\
-\begin{tabular}{| l | l | l | l | l | l | l | l | l |}
-\hline
-addr & 31 .. 28 & 27 .. 24 & 23 .. 20 & 19 .. 16 & 15 .. 12 & 11 .. 8 & 7 .. 4 & 3 .. 0 \\ \hline
-E8 &  & RX phase & BCID sync mode & Readout mode & \multicolumn{4}{c|}{GBT status}\\ \hline
-E9 &  \multicolumn{8}{c|}{CRU Orbit} \\\hline
-EA &  & & & & & \multicolumn{3}{c|}{CRU BC} \\\hline
-EB &  \multicolumn{4}{c|}{Selector FIFO count} &  \multicolumn{4}{c|}{Raw FIFO count} \\\hline
-EC &  \multicolumn{8}{c|}{Selector first hit dropped orbit} \\\hline
-ED &  \multicolumn{8}{c|}{Selector last hit dropped orbit} \\\hline
-EE &  \multicolumn{8}{c|}{Selector total hits dropped} \\ \hline
-EF &  & & & & \multicolumn{4}{c|}{Readout rate} \\ \hline
-\end{tabular}
-
-\caption{GBT status bit\label{long}}\\
-\begin{tabular}{| l | l | l |}
-\hline
-Бит & значение \\ \hline
-0 & Phase aligner CPLL lock \\ \hline
-1 & RX word clock ready \\ \hline
-2 & RX frame clock ready \\ \hline
-3 & MGT link ready \\ \hline
-4 & TX reset done \\ \hline
-5 & TX FSM reset done \\ \hline
-6 & GBT RX ready \\ \hline
-7 & GBT RX error detected \\ \hline
-8 & GBT RX error latch \\ \hline
-9 & RX phase error \\ \hline
-\end{tabular}
-
-
-
-\caption{Readout mode\label{long}}\\
-\begin{tabular}{| l | l | l |}
-\hline
-Значение регистра & режим работы \\ \hline
-0 & Idle \\ \hline
-1 & Continuous \\ \hline
-2 & Triggered \\ \hline
-\end{tabular}
-
-\caption{BCID sync mode\label{long}}\\
-\begin{tabular}{| l | l | l |}
-\hline
-Значение регистра & режим работы \\ \hline
-0 & Start \\ \hline
-1 & Sync \\ \hline
-2 & Lost \\ \hline
-\end{tabular}
-
-\caption{Список управляющих регистров\label{long}}\\
-\begin{tabular}{| l | l | l |}
-\hline
-Название регисра & используется в модуле & является побитовым \\ \hline
+Название регистра & используется в модуле & является побитовым \\ \hline
 Readout mode & Event selector, TX generator, RX data decoder & да \\ \hline
 Readout command & CTP/LTU emulator & нет \\ \hline
 Reset control & GBT, RX data decoder, Event selector, RX data clock sync & да \\ \hline
@@ -373,8 +295,8 @@ Trigger continuous pattern & CTP/LTU emulator & нет \\ \hline
 Trigger continuous value & CTP/LTU emulator & нет \\ \hline
 Trigger bunch frequency & CTP/LTU emulator & нет \\ \hline
 Data bunch frequency & PM/TCM emulator & нет \\ \hline
-Trigger bunch offset & CTP/LTU emulator & нет \\ \hline
-Data bunch offset & PM/TCM emulator & нет \\ \hline
+Trigger start offset & CTP/LTU emulator & нет \\ \hline
+Data start offset & PM/TCM emulator & нет \\ \hline
 FEE ID & CRU packet builder & нет \\ \hline
 PAR & CRU packet builder & нет \\ \hline
 Max RDH payload &  Event selector & нет \\ \hline
@@ -384,9 +306,108 @@ BCID delay & RX data decoder & нет \\ \hline
 Data select trigger mask &  Event selector & нет \\ \hline
 %reg & module & да \\ \hline
 \end{tabular}
+\caption{Список регистров управления\label{tab1}}
+\end{table}
 
 
-\caption{Список регистров статуса\label{long}}\\
+\begin{table}[H]
+\centering
+\begin{tabular}{| l | l | l | l | l | l | l | l | l |}
+\hline
+addr & 31 .. 28 & 27 .. 24 & 23 .. 20 & 19 .. 16 & 15 .. 12 & 11 .. 8 & 7 .. 4 & 3 .. 0 \\ \hline
+D8 &  &  & Readout mode & Readout command & \multicolumn{2}{c|}{Reset control} & Trigger generator & Data generator \\ \hline
+D9 &  \multicolumn{8}{c|}{Trigger respond mask} \\\hline
+DA &  \multicolumn{8}{c|}{Data bunch pattern} \\\hline
+DB &  \multicolumn{8}{c|}{Trigger single value} \\\hline
+DC &  \multicolumn{8}{c|}{Trigger continuous pattern 63 to 32} \\\hline
+DD &  \multicolumn{8}{c|}{Trigger continuous pattern 31 to 0} \\\hline
+DE &  \multicolumn{8}{c|}{Trigger continuous value} \\ \hline
+DF &  \multicolumn{4}{c|}{Trigger bunch frequency} & \multicolumn{4}{c|}{Data bunch frequency} \\ \hline
+E0 & & \multicolumn{3}{c|}{Trigger start offset} &  & \multicolumn{3}{c|}{Data start offset} \\ \hline
+E1 &  \multicolumn{4}{c|}{FEE ID (RDH)} & \multicolumn{4}{c|}{PAR (RDH)} \\ \hline
+E2 &  \multicolumn{4}{c|}{Max RDH payload} & \multicolumn{4}{c|}{Detector field (RDH)} \\ \hline
+E3 &  \multicolumn{4}{c|}{Trigger compare delay} & \multicolumn{4}{c|}{BCID delay} \\ \hline
+E4 &  \multicolumn{8}{c|}{Data select trigger mask} \\ \hline
+\end{tabular}
+\caption{Таблица адресов регистров управления.\label{tab2}}
+\end{table}
+
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{| l | l | l |}
+\hline
+No & bit & значение \\ \hline
+0 & 8 & Orbit sync \\ \hline
+1 & 9 & Drop hit counter \\ \hline
+2 & 10 & Generator start offset \\ \hline
+3 & 11 & GBT errors \\ \hline
+4 & 12 & Reset GBT \\ \hline
+5 & 13 & RX phase error \\ \hline
+\end{tabular}
+\caption{Описание битов регистра 'Reset control'\label{tab3}}
+\end{table}
+
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{| l | l | l |}
+\hline
+Значение регистра & режим работы \\ \hline
+0 & No generator \\ \hline
+1 & Main generator \\ \hline
+2 & TX generator \\ \hline
+\end{tabular}
+\caption{Описание состояний регистра 'Data generator'\label{tab4}}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{| l | l | l |}
+\hline
+Значение регистра & режим работы \\ \hline
+0 & No generator \\ \hline
+1 & Continuous generator \\ \hline
+\end{tabular}
+\caption{Описание состояний регистра 'Trigger generator'\label{tab5}}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{| l | l | l |}
+\hline
+Значение регистра & режим работы \\ \hline
+0 & None \\ \hline
+1 & SOC \\ \hline
+2 & SOT \\ \hline
+3 & EOC \\ \hline
+4 & EOT \\ \hline
+\end{tabular}
+\caption{Описание состояний регистра 'Readout command'\label{tab6}}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{| l | l | l |}
+\hline
+No & bit & значение \\ \hline
+0 & 20 & Is HB response \\ \hline
+1 & 21 & Is readout bypass mode \\ \hline
+2 & 22 & Force readout idle mode \\ \hline
+\end{tabular}
+\caption{Описание битов регистра 'Readout mode'\label{tab7}}
+\end{table}
+
+
+\subsection{Описание регистров статуса}
+
+\begin{table}[H]
+\centering
 \begin{tabular}{| l | l | l |}
 \hline
 Название регисра & используется в модуле & является побитовым \\ \hline
@@ -403,10 +424,77 @@ Selector last hit dropped orbit & Event selector & нет \\ \hline
 Selector total hits dropped & Event selector & нет \\ \hline
 Readout rate & Event selector & нет \\ \hline
 \end{tabular}
+\caption{Список регистров статуса\label{tab8}}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{| l | l | l | l | l | l | l | l | l |}
+\hline
+addr & 31 .. 28 & 27 .. 24 & 23 .. 20 & 19 .. 16 & 15 .. 12 & 11 .. 8 & 7 .. 4 & 3 .. 0 \\ \hline
+E8 &  & RX phase & BCID sync mode & Readout mode & \multicolumn{4}{c|}{GBT status}\\ \hline
+E9 &  \multicolumn{8}{c|}{CRU Orbit} \\\hline
+EA &  & & & & & \multicolumn{3}{c|}{CRU BC} \\\hline
+EB &  \multicolumn{4}{c|}{Selector FIFO count} &  \multicolumn{4}{c|}{Raw FIFO count} \\\hline
+EC &  \multicolumn{8}{c|}{Selector first hit dropped orbit} \\\hline
+ED &  \multicolumn{8}{c|}{Selector last hit dropped orbit} \\\hline
+EE &  \multicolumn{8}{c|}{Selector total hits dropped} \\ \hline
+EF &  & & & & \multicolumn{4}{c|}{Readout rate} \\ \hline
+\end{tabular}
+\caption{Таблица адресов регистров статуса.\label{tab9}}
+\end{table}
 
 
 
 
+\begin{table}[H]
+\centering
+\begin{tabular}{| l | l | l |}
+\hline
+Бит & значение \\ \hline
+0 & Phase aligner CPLL lock \\ \hline
+1 & RX word clock ready \\ \hline
+2 & RX frame clock ready \\ \hline
+3 & MGT link ready \\ \hline
+4 & TX reset done \\ \hline
+5 & TX FSM reset done \\ \hline
+6 & GBT RX ready \\ \hline
+7 & GBT RX error detected \\ \hline
+8 & GBT RX error latch \\ \hline
+9 & RX phase error \\ \hline
+\end{tabular}
+\caption{Описание битов регистра 'GBT status'\label{tab10}}
+\end{table}
+
+
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{| l | l | l |}
+\hline
+Значение регистра & режим работы \\ \hline
+0 & Idle \\ \hline
+1 & Continuous \\ \hline
+2 & Triggered \\ \hline
+\end{tabular}
+\caption{Описание состояний регистра 'Readout mode'\label{tab11}}
+\end{table}
+
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{| l | l | l |}
+\hline
+Значение регистра & режим работы \\ \hline
+0 & Start \\ \hline
+1 & Sync \\ \hline
+2 & Lost \\ \hline
+\end{tabular}
+\caption{Описание состояний регистра 'BCID sync mode'\label{tab12}}
+\end{table}
 
 
 \end{document}

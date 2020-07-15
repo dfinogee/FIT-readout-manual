@@ -109,22 +109,25 @@ FRU обменивается данными с PM/TCM с одной сторон
 
 Как было описано в разделе "Описание алгоритма коррекции BC и отбора событий" номер полученный от CTP, (фактически - номер внутреннего счетчика синхронизированный с CTP) корректируется на величину разности задержек в распространении триггерного сообщения и обработки сигнала детектором. Величина корректировки задается регистром 'bcid delay'.
 
-Модуль 'RX data decoder' обрабатывает триггера запуска и остановки вычитывания (SOT - start of trigger, EOT - end of trigger, SOC - start of continuous, EOC - end of continuous) управляя текущем режимом вычитывания. Состояние режима может принимать значения 'idle', 'continuous', triggered', значение доступно по регистру статуса 'readout mode'. Выставив в регистре управления 'readout mode' бит 'force readout idle mode' возможно принудительно перевести режим вычитывания в 'idle' что необходимо при включении или возникновении ошибки. При значении регистра 'readout mode' равном 'idle' модуль 'event selector' прекращает работу.
+Модуль 'RX data decoder' обрабатывает триггера запуска и остановки вычитывания (SOT - start of trigger, EOT - end of trigger, SOC - start of continuous, EOC - end of continuous) управляя текущем режимом вычитывания. Состояние режима может принимать значения 'idle', 'continuous', triggered', значение доступно по регистру статуса 'readout mode'. При запущенном режиме вычитывания модуль CTP (и соответсвенно CTP emulator) отправляет триггера соответствующие режиму вычитывания (idle, continious, trigger - статус режима вычитывания CRU) каждый орбит вместе с триггером HB. При получении такого триггера, FIT readout запускает передачу данных так же как и при получении команды запуска вычитывания. Это необходимо для автоматического продолжения режима вычитывания после сбоя или принудительной остановки.  Последнее значение статуса режима вычитывания CRU доступно по регистру статуса 'CRU readout mode'.
+
+Выставив в регистре управления 'readout mode' бит 'force readout idle mode' возможно принудительно перевести режим вычитывания в 'idle' что необходимо при включении или возникновении ошибки. При значении регистра 'readout mode' равном 'idle' модуль 'event selector' прекращает работу.
 
 
 
 
 \subsection{модуль CTP emulator}
-Для работы без CTP/LTU предусмотрен модуль 'CTP emulator' который производит все необходимые данные для отладки работы 'FIT readout unit'. Включение модуля (отключение приема сигналов CTP) происходит переключением регистра 'Trigger generator' в состояние 'Continuous generator'. 'CTP emulator' выполняет следующие функции:
+Для работы без CTP/LTU предусмотрен модуль 'CTP emulator' который производит все необходимые данные для отладки работы 'FIT readout unit'. Включение модуля (отключение приема сигналов CTP) происходит переключением регистра 'Trigger generator' в состояние 'Continuous generator'. При переключении регистра 'Trigger generator' в состояние 'TX generator', сформированные данные будут отправлены еще и на выход GBT что позволяет использовать любой модуль как внешний эмулятор CTP. 'CTP emulator' выполняет следующие функции:
 \begin{itemize}
 \item Генерация триггера 'HB' и номера события event id для эмуляции CRU.
 \item Генерфция триггеров запуска и остановки процедуры вычитывания.
+\item Генерфция триггеров статуса режима вычитывания.
 \item Генерация одиночного триггера по команде
 \item Генерация непрерывного триггера с возможностью синхронизацией с тестовым генератором данных
 \end{itemize}
 Генерация триггера 'HB' и номера события event id происходит автоматически и не управляется.
 
-Генерация триггеров запуска и остановки процедуры вычитывания происходит по команде. При переводе регистра 'readout command' из состояния 'OFF' в состоянии команды 'SOC', 'SOT', 'EOT', 'EOC' отправляется соответствующий триггер управления режимом вычитывания. Триггер команды отправляется в момент начала орбита вместе с триггером 'HB' в соответствии с требованиями ALICE DAQ.
+Генерация триггеров запуска и остановки процедуры вычитывания происходит при переводе регистра 'readout command' из состояния 'idle' в состоянии 'continious' или 'trigger' и наоборот. При этом отправляется соответствующий триггер управления режимом вычитывания. Триггер команды отправляется в момент начала орбита вместе с триггером 'HB' в соответствии с требованиями ALICE DAQ. После смены режима вычитывания начинают отправляться триггера статуса режима вычитывания CRU.
 
 Для отправки единичного триггера необходимо в регистр 'trigger single value' записать ноль, а потом значение триггера, которое необходимо отправить. Отправка триггера происходит при изменении регистра из значения 0x0 в ненулевое.
 
@@ -189,6 +192,29 @@ FRU обменивается данными с PM/TCM с одной сторон
 
 Бит 'reset start offset' в регистре 'Reset control' перезапускает генерацию данных в модулях 'PM/TCM emulator' и 'CTP emulator' для их синхронизации.
 
+\section{Описание работы модуля FTM}
+
+Модуль FTM предназначен для тестирования модулей PM без TCM, CTP, LTU, CRU. Модуль FTM выполняет следующие функции:
+\begin{itemize}
+
+\item Генерация клоков в качестве симуляции модуля TCM
+\item Конфигурирование модуля PM и получение претриггерных данных по HDMI.
+\item Генерация импульсов для запуска лазера
+\item Генерация триггеров в качестве эмуляции модуля CTP/LTU
+\item Передача данных от модулей PM/TCM полученных по GBT протоколу в PC по ethernet соединению (эмуляция CRU)
+\item Работа с FIT readout unit (разработка и тестирование в модуля)
+\end{itemize}
+
+Функциональная схема представлена на рис ~\ref{fig:6}. FTM содержит FIT readout unit (FRU - PM version) в котором модуль 'CTP emulator' используется для передачи сгенерированных триггеров по протоколу GBT в модули PM/TCM, для этого необходимо перевести регистр 'Trigger generator' в состояние 'TX generator'. Все данные полученные по GBT RX передаются в модуль FRU для работы с ним и в модуль 'IPbus sender' для отправки в PC по ethernet. Данные полученные по HDMI с PM модуля также передаются в 'IPbus sender' и так же передаются в PC. Для запуска лазера производится сравнение полученного триггера (от эмулятора или от входа GBT) с регистром 'Trigger response mask'. Генерация импульса для лазера может происходить от служебных триггеров (HB, SOT ...), от непрерывной генерации триггера , от единичного триггера. (см. описание модуля CTP emulator)
+
+
+
+
+\begin{figure}[H]
+	\centering 
+	\includegraphics[width=1\textwidth]{FTM_sch.png}
+	\caption{\label{fig:6} Функциональная схема модуля FTM}
+\end{figure}
 
 
 
@@ -208,7 +234,7 @@ FIT readout unit использует две группы клоков с   пр
 
 
 \section{Описание формата данных детектора FIT}
-Структура пакета передаваемых детектором по GBT приведена на рисунке  ~\ref{fig:6}. Заголовком пакета является  RDH (Raw Data Header) Актуальную версию формата заголовка можно узнать из комментариев к коду O2.
+Структура пакета передаваемых детектором по GBT приведена на рисунке  ~\ref{fig:7}. Заголовком пакета является  RDH (Raw Data Header) Актуальную версию формата заголовка можно узнать из комментариев к коду O2.
 
 \url{https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Headers/include/Headers/RAWDataHeader.h}
 
@@ -216,12 +242,12 @@ FIT readout unit использует две группы клоков с   пр
 \begin{figure}[H]
 	\centering 
 	\includegraphics[width=0.5\textwidth]{RDH_scheme.png}
-	\caption{\label{fig:6} Схема RDH пакета}
+	\caption{\label{fig:7} Схема RDH пакета}
 \end{figure}
 
 
 
-В теле RDH пакета содержится набор пакетов данных каждый из которых относится к отдельному событию и состоит из заголовка 'event header' и блока данных. Пакеты событий всегда относятся к одному орбиту и отсортированы по порядку поступления. Формат заголовка одинаков для модулей PM/TCM, его формат представлен в таблице ~\ref{fig:7}. Формат блока данных различен для PM/TCM, TCM имеет два режима передачи: стандартный и расширенный. В PM каждое GBT слово 80 бит содержит одно или два слова 40 бит для канала: с 0 бита по 39 и с 40 по 79, в случае одного слова, старшие биты с 40 по 79 заполняются нулями. Формат слова для канала представлен в таблице ~\ref{fig:8}. Поскольку PM имеет 12 каналов, размер пакета данных события составляет от двух до 7 слов GBT. Формат данных для TCM представлен в таблице ~\ref{fig:9} и имеет размер в 1 GBT слово плюс заголовок. В расширенном режиме пакет данных TCM имеет 9 слов плюс заголовок в этом режиме передача данных для двух соседних событий невозможна. Актуальная версия формата данных доступна по ссылке.
+В теле RDH пакета содержится набор пакетов данных каждый из которых относится к отдельному событию и состоит из заголовка 'event header' и блока данных. Пакеты событий всегда относятся к одному орбиту и отсортированы по порядку поступления. Формат заголовка одинаков для модулей PM/TCM, его формат представлен в таблице ~\ref{fig:8}. Формат блока данных различен для PM/TCM, TCM имеет два режима передачи: стандартный и расширенный. В PM каждое GBT слово 80 бит содержит одно или два слова 40 бит для канала: с 0 бита по 39 и с 40 по 79, в случае одного слова, старшие биты с 40 по 79 заполняются нулями. Формат слова для канала представлен в таблице ~\ref{fig:9}. Поскольку PM имеет 12 каналов, размер пакета данных события составляет от двух до 7 слов GBT. Формат данных для TCM представлен в таблице ~\ref{fig:10} и имеет размер в 1 GBT слово плюс заголовок. В расширенном режиме пакет данных TCM имеет 9 слов плюс заголовок в этом режиме передача данных для двух соседних событий невозможна. Актуальная версия формата данных доступна по ссылке.
 
 \url{https://drive.google.com/file/d/1LxKEuedLqxtyCRw072ZqJ2vj7upP0ZgV}
 
@@ -230,19 +256,19 @@ FIT readout unit использует две группы клоков с   пр
 \begin{figure}[H]
 	\centering 
 	\includegraphics[width=1\textwidth]{readout_format.png}
-	\caption{\label{fig:7} Формат данных детектора}
+	\caption{\label{fig:8} Формат данных детектора}
 \end{figure}
 
 \begin{figure}[H]
 	\centering 
 	\includegraphics[width=0.8\textwidth]{PM_data.png}
-	\caption{\label{fig:8} Формат данных модуля PM}
+	\caption{\label{fig:9} Формат данных модуля PM}
 \end{figure}
 
 \begin{figure}[H]
 	\centering 
 	\includegraphics[width=0.8\textwidth]{TCM_data.png}
-	\caption{\label{fig:9} Формат данных модуля TCM}
+	\caption{\label{fig:10} Формат данных модуля TCM}
 \end{figure}
 
 
@@ -254,7 +280,7 @@ FIT readout unit использует две группы клоков с   пр
 \begin{table}[H]
 \begin{tabularx}{1\textwidth}{|p{1,8cm}|p{1cm}|p{1cm}|p{1cm}|p{1,5cm}|p{1,5cm}|p{1,5cm}|p{1,5cm}|X|}
 \hline
-Название & ширина записи, бит & ширина чтения, бит & размер & клок записи & клок чтения & используется в модуле & регистр занятости & назначение \\ \hline
+Название & ширина записи, бит & ширина записи, бит & размер & клок записи & клок чтения & используется в модуле & регистр занятости & назначение \\ \hline
 
 Raw fifo & 80 & 80 & 4096 & system320 & system320 & Data packager & Raw FIFO count & Принимает сформированные данные PM/TCM для дальнейшего отбора модулем'event selector' \\ \hline
 
@@ -265,6 +291,10 @@ Trg fifo & 76 & 76 & 512 & data40 & system320 & event selector & нет & При
 Сntpck fifo & 160 & 160 & 128 & system320 & data40 & event selector & нет & содержит управляющие слова для формирования RDH \\ \hline
 
 data320to40 & 80 & 80 & 4096 & system320 & data40 & TX data generator & нет & принимает данные модуля из raw data fifo для отправки по GBT в режиме 'is readout bypass mode' \\ \hline
+
+hdmi fifo & 80 & 80 & 4096 & system320 & RXdata40 & IPBUS sender (FTM) & нет & Переход между клоками sys320 и RXdata40 для совмещения данных HDMI с данными принятыми по GBT и дальнейшей отправки в IPbus \\ \hline
+
+ipbus data fifo & 96 & 192 & 16384 & RXdata40 & IPbusData & IPBUS sender (FTM) & FTMIPbus fifo count & Буфер на отправку данных от GBT+HDMI по IPbus \\ \hline
 
 \end{tabularx}
 \caption{Список используемых блоков памяти\label{tab0}}
@@ -372,6 +402,7 @@ No & bit & значение \\ \hline
 Значение регистра & режим работы \\ \hline
 0 & No generator \\ \hline
 1 & Continuous generator \\ \hline
+2 & TX generator \\ \hline
 \end{tabular}
 \caption{Описание состояний регистра 'Trigger generator'\label{tab5}}
 \end{table}
@@ -382,11 +413,9 @@ No & bit & значение \\ \hline
 \begin{tabular}{| l | l | l |}
 \hline
 Значение регистра & режим работы \\ \hline
-0 & None \\ \hline
-1 & SOC \\ \hline
-2 & SOT \\ \hline
-3 & EOC \\ \hline
-4 & EOT \\ \hline
+0 & Idle \\ \hline
+1 & Continious \\ \hline
+2 & Trigger \\ \hline
 \end{tabular}
 \caption{Описание состояний регистра 'Readout command'\label{tab6}}
 \end{table}
@@ -420,6 +449,7 @@ CRU orbit & RX data decoder & нет \\ \hline
 CRU bc & RX data decoder & нет \\ \hline
 Selector FIFO count & Event selector & нет \\ \hline
 Raw FIFO count & Data converter & нет \\ \hline
+FTMIPbus FIFO count & FIT TESTMODULE IPBUS sender (FTM) & нет \\ \hline
 Selector first hit dropped orbit & Event selector & нет \\ \hline
 Selector last hit dropped orbit & Event selector & нет \\ \hline
 Selector total hits dropped & Event selector & нет \\ \hline
@@ -434,14 +464,14 @@ Readout rate & Event selector & нет \\ \hline
 \begin{tabular}{| l | l | l | l | l | l | l | l | l |}
 \hline
 addr & 31 .. 28 & 27 .. 24 & 23 .. 20 & 19 .. 16 & 15 .. 12 & 11 .. 8 & 7 .. 4 & 3 .. 0 \\ \hline
-E8 &  & RX phase & BCID sync mode & Readout mode & \multicolumn{4}{c|}{GBT status}\\ \hline
+E8 & CRU readout mode & RX phase & BCID sync mode & Readout mode & \multicolumn{4}{c|}{GBT status}\\ \hline
 E9 &  \multicolumn{8}{c|}{CRU Orbit} \\\hline
 EA &  & & & & & \multicolumn{3}{c|}{CRU BC} \\\hline
 EB &  \multicolumn{4}{c|}{Selector FIFO count} &  \multicolumn{4}{c|}{Raw FIFO count} \\\hline
 EC &  \multicolumn{8}{c|}{Selector first hit dropped orbit} \\\hline
 ED &  \multicolumn{8}{c|}{Selector last hit dropped orbit} \\\hline
 EE &  \multicolumn{8}{c|}{Selector total hits dropped} \\ \hline
-EF &  & & & & \multicolumn{4}{c|}{Readout rate} \\ \hline
+EF &  \multicolumn{4}{c|}{FTM IPbus fifo count} & \multicolumn{4}{c|}{Readout rate} \\ \hline
 \end{tabular}
 \caption{Таблица адресов регистров статуса.\label{tab9}}
 \end{table}
@@ -480,7 +510,7 @@ EF &  & & & & \multicolumn{4}{c|}{Readout rate} \\ \hline
 1 & Continuous \\ \hline
 2 & Triggered \\ \hline
 \end{tabular}
-\caption{Описание состояний регистра 'Readout mode'\label{tab11}}
+\caption{Описание состояний регистра 'Readout mode', 'CRU readout mode'\label{tab11}}
 \end{table}
 
 
@@ -501,8 +531,10 @@ EF &  & & & & \multicolumn{4}{c|}{Readout rate} \\ \hline
 
 \section{Ссылки на рабочие документы и программное обеспечение по проекту FIT}
 
+Полный список актуальных ссылок на документы находится на странице  ALICE FIT Twiki. Ниже приведены некоторые ссылки актуальные на момент составления списка.
+
 \begin{itemize}
-\item ALICE FIT twiki
+\item ALICE FIT Twiki
 \url {https://twiki.cern.ch/twiki/bin/view/AliceFIT/WebHome}
 
 \item Документация по FIT readout unit (этот документ)

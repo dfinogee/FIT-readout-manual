@@ -28,6 +28,7 @@
 
 
 \tableofcontents
+
 \newpage
 
 \section{FIT readout unit}
@@ -154,6 +155,7 @@ FRU обменивается данными с PM/TCM с одной сторон
 
 \subsection{модуль Data converter}
 Модуль 'data converter' принимает данные от PM/TCM по клоку 320 МГц и дополняет их заголовком 'event header'. Данные, дополненные заголовком оправляются в 'raw fifo' по клоку 320 МГц. Для контроля занятости 'raw fifo' по регистру 'raw fifo count' доступно количество слов данных в fifo.
+Данный модуль различен для PM/TCM проесков, вариант для TCM содержит FIFO 'tcm data 160to80bit fifo' для разделения 160 битных слов на 80 битные.
 
 
 
@@ -296,6 +298,7 @@ hdmi fifo & 80 & 80 & 4096 & system320 & RXdata40 & IPBUS sender (FTM) & нет 
 
 ipbus data fifo & 96 & 192 & 16384 & RXdata40 & IPbusData & IPBUS sender (FTM) & FTMIPbus fifo count & Буфер на отправку данных от GBT+HDMI по IPbus \\ \hline
 
+tcm data 160to80bit fifo & 160 & 80 & 4096 & system320 & system320 & Data Converter & нет & Разбиение 160 битных слов от TCM на 80 битные для передачи \\ \hline
 \end{tabularx}
 \caption{Список используемых блоков памяти\label{tab0}}
 \end{table}
@@ -531,7 +534,7 @@ EF &  \multicolumn{4}{c|}{FTM IPbus fifo count} & \multicolumn{4}{c|}{Readout ra
 
 \section{Ссылки на рабочие документы и программное обеспечение по проекту FIT}
 
-Полный список актуальных ссылок на документы находится на странице  ALICE FIT Twiki. Ниже приведены некоторые ссылки актуальные на момент составления списка.
+Полный список актуальных ссылок на документы находится на странице  ALICE FIT Twiki.
 
 \begin{itemize}
 \item ALICE FIT Twiki
@@ -539,30 +542,6 @@ EF &  \multicolumn{4}{c|}{FTM IPbus fifo count} & \multicolumn{4}{c|}{Readout ra
 
 \item Документация по FIT readout unit (этот документ)
 \url{https://github.com/dfinogee/FIT-readout-manual/archive/master.zip}
-
-\item Код O2 с описанием формата RDH в коментариях
-\url{https://github.com/AliceO2Group/AliceO2/blob/dev/DataFormats/Headers/include/Headers/RAWDataHeader.h}
-
-\item Список регистров управления электроникой PM, TCM, FTM и описание формата данных
-\url{https://drive.google.com/file/d/1LxKEuedLqxtyCRw072ZqJ2vj7upP0ZgV}
-
-\item Формат данных DCS DIM server
-\url {https://docs.google.com/spreadsheets/d/1thWhrCXjiy1TCPqNQMcDQhZT5_r9W99qBS6I7gP1qUM/edit?usp=sharing}
-
-\item FIT DCS errors and states table
-\url {https://1drv.ms/x/s!AkcFS39-p1V3i90otp9Ft-WtBZxrGQ?e=1Zie23}
-
-\item FIT calibration precedures table
-\url {https://docs.google.com/spreadsheets/d/1OH8Vx8-9-AFI8klffS3ApoG-W4m2abMectXFsOD9eSc/edit#gid=2045533669}
-
-\item ALICE LS2 Recommissioning: Contacts
-\url {https://docs.google.com/spreadsheets/d/1r5kaKWPb4KZuImwc7iYxIz67Vcic1Lyhi844HAmYt0E/edit?usp=sharing}
-
-\item Програмный пакет для управления электроникой (Н. Вознюк)
-\url {https://drive.google.com/open?id=1QItOYTsRTcdh7yGw0SfQ8Hs_oWtt8J9e}
-
-\item FIT FPGA projects on git
-\url {https://github.com/AliceO2Group/alice-fit-fpga}
 
 \end{itemize}
 

@@ -23,7 +23,7 @@
 
 Актуальная версия документа доступна для скачивания по ссылке
 \newline
-\url{https://github.com/dfinogee/FIT-readout-manual/archive/master.zip}
+\url{https://github.com/dfinogee/FIT-readout-manual/raw/master/FIT_readout_manual.pdf}
 
 
 
@@ -532,6 +532,22 @@ EF &  \multicolumn{4}{c|}{FTM IPbus fifo count} & \multicolumn{4}{c|}{Readout ra
 
 
 
+\section{Описание описание пакета симуляции}
+
+Пакет симуляции выполнен на языке pyton и расположен в папке alice-fit-fpga/software/readout-sim. Симуляция позволяет выполнить проверку работы модуля FIT-readout-unit при симуляции vhdl кода пакетом Vivado (в настоящее время выполнено только логическая симуляция). Последовательность проверки следующая:
+
+\begin{itemize}
+\item Запись файла readout-sim/simulation\_inputs/simple\_sig\_inputs.txt который содержит конфигурацию всех регистров для каждого цикла @40МГц. Файл записывается в первой части исполняймого файла testbench.py и содержит команды firmware-генераторов для запуска и остановки записи данных в режимах которые необходимо проверить. На данный момент это triggered, continious, continious-load (несколько пакетов на орбит) раны.
+\item Запуск симуляции в пакете Vivado. Симуляция использует файл simple\_sig\_inputs.txt для конфигурации пакета редаута. Как результат симуляции записывается файлы readout-sim/simulation\_outputs/readout\_gbt\_info\_output.txt, readout\_gbt\_output.txt, readout\_status\_reg\_output.txt. В файл readout\_status\_reg\_output.txt записывается расширенный регистр статуса (добавлены триггер, скорректированый ORBC и размер пакета в DataGenerator) для каждого цикла. В файл readout\_gbt\_output.txt записываются все ненулевые слова с GBT, а в readout\_gbt\_info\_output.txt номера циклов в которых записаны слова GBT.
+\item Запуск проверки выходных файлов с выводом ошибок найденных в пакетах данных.
+\end{itemize}
+
+Запуск проверки данных запускается в исполняемом файле testbehch.py. В начале создается элемент класса simulation\_data\_class. В данном классе указываются пути для всех выходных файлов и файлы связываются с переменными типа list для чтения. При создании класса simulation\_data
+\_class читается входной файл конфигурации simple\_sig\_inputs.txt и производится поиск команд на запуск и остановки ранов. Для каждого рана создается элемент класса run\_sim\_data\_class где читается из файла конфигурации вся необходимая информация о ране (начало и конец рана в файлах, тип рана и его конфигурация) и проверяется корректность регистров конфигурации во время рана (постоянность конфигурации, отсутствие ранов некоторое время до старта и после остановки). Так же при создании класса создается список с данными и триггерами генерированные в тестовых генераторах firmware.
+
+После создания класса simulation\_data\_class создается элемент класса run\_testbench\_class для каждого рана, классу передается класс simulation\_data\_class и номер рана который необходимо проверить. При создании класса run\_testbench\_class производится чтение пакетов RDH и пакетов детектора из файла GBT  с проверкой ошибок в формате данных. После считывания, пакеты проверяются к корректность (наличие триггеров старта и остановки рана в данных, счетчик пакетов RDH, stop bit, orbit в заголовке RDH и событиях, наличие всех сгенерированных данных с учетом режима вычитываня continious/trigger). Статус выполнения проверки выводится логом в терминал и файл.
+
+
 \section{Ссылки на рабочие документы и программное обеспечение по проекту FIT}
 
 Полный список актуальных ссылок на документы находится на странице  ALICE FIT Twiki.
@@ -541,7 +557,7 @@ EF &  \multicolumn{4}{c|}{FTM IPbus fifo count} & \multicolumn{4}{c|}{Readout ra
 \url {https://twiki.cern.ch/twiki/bin/view/AliceFIT/WebHome}
 
 \item Документация по FIT readout unit (этот документ)
-\url{https://github.com/dfinogee/FIT-readout-manual/archive/master.zip}
+\url{https://github.com/dfinogee/FIT-readout-manual/raw/master/FIT_readout_manual.pdf}
 
 \end{itemize}
 
